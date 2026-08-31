@@ -1,0 +1,17 @@
+[project]
+name = "cryptoflow"
+version = "0.1.0"
+description = "Plataforma gamificada de investimentos em criptomoedas"
+readme = "README.md"
+authors = [
+    { email = "contato.thalyssondel@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.1",
+    "djangorestframework>=3.18.0",
+    "python-dotenv>=1.2.3",
+]
+
+[tool.uv]
+package = false
