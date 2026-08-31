@@ -8,9 +8,14 @@ from django.dispatch import receiver
 # Classes 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True)
+
+    USERNAME_FIELD = 'email'
+
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
-        return self.email or self.username
+        return f"{self.username} ({self.email})"
 
 class Wallet(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
