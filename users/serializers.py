@@ -1,7 +1,9 @@
 from rest_framework import serializers
+from .models import Wallet
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,3 +21,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = ['balance']
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    wallet = WalletSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'wallet']
