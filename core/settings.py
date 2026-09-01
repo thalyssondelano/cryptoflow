@@ -171,3 +171,14 @@ SIMPLE_JWT = {
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# Limite de 2.5MB para uploads e payloads de API
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 
+# Mitiga ataques de Hash Collision DoS limitando a quantidade de campos no payload
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+# Impede que o site seja embutido em iframes falsos (Clickjacking)
+X_FRAME_OPTIONS = "DENY"
+# Força o navegador a respeitar o formato do arquivo (Anti MIME Sniffing)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+# Ativa o bloqueio nativo do navegador contra injeção de scripts (Anti XSS)
+SECURE_BROWSER_XSS_FILTER = True
