@@ -27,6 +27,22 @@ class Wallet(models.Model):
         return f"{self.user.username} - Saldo: ${self.balance}"
 
     
+class WalletAsset(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='crypto_assets')
+    
+    crypto = models.ForeignKey('assets.CryptoCurrency', on_delete=models.CASCADE)
+    
+    quantity = models.DecimalField(max_digits=18, decimal_places=8, default=0.00000000)
+
+    class Meta:
+        # Uma carteira não pode ter duas linhas separadas para o mesmo ativo.
+        unique_together = ('wallet', 'crypto') 
+
+    def __str__(self):
+        return f"{self.quantity} {self.crypto.symbol} - {self.wallet.user.username}"
+    
 # Automações
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_wallet(sender, instance, created, **kwargs):
