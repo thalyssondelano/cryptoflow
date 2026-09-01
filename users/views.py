@@ -9,13 +9,23 @@ from .models import CustomUser, Wallet, WalletAsset, TradeHistory
 from .serializers import BuyCryptoSerializer, SellCryptoSerializer, TradeHistorySerializer
 from assets.models import CryptoCurrency
 from decimal import Decimal, ROUND_DOWN
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 User = get_user_model()
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'login'
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'register'
 
 
 class UserProfileView(generics.RetrieveAPIView):
