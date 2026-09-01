@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import CustomUser, Wallet
-from django.contrib.auth.admin import UserAdmino 
+from django.contrib.auth.admin import UserAdmin
 
 admin.site.register(CustomUser, UserAdmin)
 admin.site.register(Wallet)
