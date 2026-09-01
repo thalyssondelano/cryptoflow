@@ -5,12 +5,11 @@ from .serializers import UserRegistrationSerializer, UserProfileSerializer
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .models import WalletAsset
+from .serializers import BuyCryptoSerializer, SellCryptoSerializer
+from assets.models import CryptoCurrency
 
 User = get_user_model()
-
-from .models import WalletAsset
-from .serializers import BuyCryptoSerializer
-from assets.models import CryptoCurrency
 
 
 class UserRegisterView(generics.CreateAPIView):
@@ -75,4 +74,60 @@ class BuyCryptoView(APIView):
             "symbol": symbol,
             "quantity_bought": round(quantity_bought, 8),
             "remaining_balance": wallet.balance
+        }, status=status.HTTP_200_OK)
+
+
+class SellCryptoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = SellCryptoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        symbol = serializer.validated_data['symbol']
+        quantity_to_sell = serializer.validated_data['quantity']
+
+        # Só finaliza se nada der erro no meio do caminho
+        with transaction.atomic():
+            wallet = request.user.wallet
+            
+            # Busca a moeda no catálogo
+            crypto = CryptoCurrency.objects.get(symbol=symbol)
+
+            # Tenta pegar a linha específica dessa cripto na mochila do usuário
+            try:
+                asset = WalletAsset.objects.get(wallet=wallet, crypto=crypto)
+            except WalletAsset.DoesNotExist:
+                # Se não encontrar a linha, ele nunca comprou essa moeda
+                return Response(
+                    {"error": f"Você não possui {symbol} na sua carteira para vender."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Ele tem saldo suficiente daquela moeda?
+            if asset.quantity < quantity_to_sell:
+                return Response(
+                    {"error": "Saldo insuficiente da criptomoeda selecionada para realizar a venda."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Converte a fração de cripto em dólares
+            usd_earned = quantity_to_sell * crypto.current_price
+
+            # Atualiza a mochila e debita a cripto
+            asset.quantity -= quantity_to_sell
+            asset.save()
+
+            # Atualiza a carteira e adiciona o dinheiro
+            wallet.balance += usd_earned
+            wallet.save()
+
+        # Devolve o recibo para o front-end
+        return Response({
+            "message": "Venda executada com sucesso.",
+            "symbol": symbol,
+            "quantity_sold": quantity_to_sell,
+            "usd_earned": round(usd_earned, 2),
+            "remaining_crypto": asset.quantity,
+            "new_balance": wallet.balance
         }, status=status.HTTP_200_OK)
