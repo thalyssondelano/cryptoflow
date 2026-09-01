@@ -160,3 +160,38 @@ class TradeHistoryView(generics.ListAPIView):
 
     def get_queryset(self):
         return TradeHistory.objects.filter(wallet__user=self.request.user).order_by('-timestamp')
+
+
+class UserNetWorthView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        wallet = request.user.wallet
+        balance = wallet.balance
+        
+        crypto_assets_total = Decimal('0.00')
+        assets_detail = []
+
+        # Percorre todos os ativos da mochila do usuário
+        for asset in wallet.wallet_assets.all():
+            crypto = asset.crypto
+            current_price = crypto.current_price
+            total_value = (asset.quantity * current_price).quantize(Decimal('0.01'))
+            
+            crypto_assets_total += total_value
+            assets_detail.append({
+                "symbol": crypto.symbol,
+                "name": crypto.name,
+                "quantity": asset.quantity,
+                "current_price": current_price,
+                "total_value_usd": total_value
+            })
+
+        net_worth = (balance + crypto_assets_total).quantize(Decimal('0.01'))
+
+        return Response({
+            "balance_usd": balance,
+            "crypto_assets_usd": crypto_assets_total,
+            "net_worth_usd": net_worth,
+            "assets": assets_detail
+        }, status=status.HTTP_200_OK)
