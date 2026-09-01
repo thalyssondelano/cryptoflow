@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Wallet, WalletAsset
+from assets.models import CryptoCurrency
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -50,3 +51,19 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'wallet']
         read_only_fields = fields
+
+
+class BuyCryptoSerializer(serializers.Serializer):
+    symbol = serializers.CharField(max_length=10)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("O valor do investimento deve ser maior que zero.")
+        return value
+
+    def validate_symbol(self, value):
+        # Verifica no banco se a moeda existe e está ativa para negociação
+        if not CryptoCurrency.objects.filter(symbol=value, is_active=True).exists():
+            raise serializers.ValidationError("Criptomoeda não disponível")
+        return value
