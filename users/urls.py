@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserRegisterView, UserProfileView, BuyCryptoView, SellCryptoView, TradeHistoryView, UserNetWorthView
+from .views import UserRegisterView, UserProfileView, BuyCryptoView, SellCryptoView, TradeHistoryView, UserNetWorthView, GlobalLeaderboardView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -13,4 +13,5 @@ urlpatterns = [
     path('sell/', SellCryptoView.as_view(), name='sell_crypto'),
     path('history/', TradeHistoryView.as_view(), name='trade-history'),
     path('net-worth/', UserNetWorthView.as_view(), name='user-net-worth'),
+    path('leaderboard/', GlobalLeaderboardView.as_view(), name='global-leaderboard'),
 ]
