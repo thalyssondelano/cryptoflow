@@ -11,7 +11,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'password']
         
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
+            'id': {'read_only': True}
         }
 
     def create(self, validated_data):
@@ -23,13 +24,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-class WalletSerializer(serializers.ModelSerializer):
+class WalletSerializer(serializers.ReadOnlyModelSerializer):
     class Meta:
         model = Wallet
         fields = ['balance']
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ReadOnlyModelSerializer):
     wallet = WalletSerializer(read_only=True)
 
     class Meta:
