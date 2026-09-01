@@ -24,15 +24,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-class WalletSerializer(serializers.ReadOnlyModelSerializer):
+class WalletSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ['balance']
+        read_only_fields = fields
 
 
-class UserProfileSerializer(serializers.ReadOnlyModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     wallet = WalletSerializer(read_only=True)
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'wallet']
+        read_only_fields = fields
