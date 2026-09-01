@@ -54,6 +54,19 @@ services:
         condition: service_started
       db:
         condition: service_healthy
+  
+
+  beat:
+    build: .
+    container_name: cryptoflow_beat
+    command: uv run celery -A core beat -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_started
 
 volumes:
   postgres_data:
