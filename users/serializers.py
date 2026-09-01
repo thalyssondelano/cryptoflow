@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Wallet, WalletAsset
+from .models import Wallet, WalletAsset, TradeHistory
 from assets.models import CryptoCurrency
 from django.contrib.auth import get_user_model
 
@@ -83,3 +83,22 @@ class SellCryptoSerializer(serializers.Serializer):
         if not CryptoCurrency.objects.filter(symbol=value, is_active=True).exists():
             raise serializers.ValidationError("Criptomoeda não disponível.")
         return value
+
+
+class TradeHistorySerializer(serializers.ModelSerializer):
+    crypto_symbol = serializers.CharField(source='crypto.symbol', read_only=True)
+    crypto_name = serializers.CharField(source='crypto.name', read_only=True)
+
+    class Meta:
+        model = TradeHistory
+        fields = [
+            'id', 
+            'trade_type', 
+            'crypto_symbol', 
+            'crypto_name', 
+            'quantity', 
+            'price_at_transaction', 
+            'usd_amount', 
+            'timestamp'
+        ]
+        read_only_fields = fields
