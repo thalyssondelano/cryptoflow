@@ -14,6 +14,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'atualizar-precos-cripto': {
         'task': 'assets.tasks.fetch_and_update_prices',
-        'schedule': crontab(minute='*/1'),
+        'schedule': crontab(minute='*/4'),
     },
 }
