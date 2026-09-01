@@ -5,13 +5,12 @@ from .serializers import UserRegistrationSerializer, UserProfileSerializer
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import WalletAsset
+from .models import CustomUser, Wallet, WalletAsset, TradeHistory
 from .serializers import BuyCryptoSerializer, SellCryptoSerializer
 from assets.models import CryptoCurrency
 from decimal import Decimal, ROUND_DOWN
 
 User = get_user_model()
-
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -58,6 +57,7 @@ class BuyCryptoView(APIView):
             wallet.balance -= amount
             wallet.save()
 
+
             # Coloca a moeda na mochila
             asset, created = WalletAsset.objects.get_or_create(
                 wallet=wallet, 
@@ -68,6 +68,16 @@ class BuyCryptoView(APIView):
             # Soma a quantidade comprada e salva
             asset.quantity += quantity_bought
             asset.save()
+
+            # Cria o recibo da compra no banco de dados
+            TradeHistory.objects.create(
+                wallet=wallet,
+                crypto=crypto,
+                trade_type='BUY',
+                quantity=quantity_bought,
+                price_at_transaction=crypto.current_price,
+                usd_amount=amount
+            )
 
         # Devolve o sucesso para o front-end
         return Response({
@@ -122,6 +132,16 @@ class SellCryptoView(APIView):
             # Atualiza a carteira e adiciona o dinheiro
             wallet.balance += usd_earned
             wallet.save()
+
+            # Cria o recibo da venda no banco de dados
+            TradeHistory.objects.create(
+                wallet=wallet,
+                crypto=crypto,
+                trade_type='SELL',
+                quantity=quantity_to_sell,
+                price_at_transaction=crypto.current_price,
+                usd_amount=usd_earned
+            )
 
         # Devolve o recibo para o front-end
         return Response({
