@@ -173,7 +173,7 @@ class UserNetWorthView(APIView):
         assets_detail = []
 
         # Percorre todos os ativos da mochila do usuário
-        for asset in wallet.wallet_assets.all():
+        for asset in wallet.crypto_assets.all():
             crypto = asset.crypto
             current_price = crypto.current_price
             total_value = (asset.quantity * current_price).quantize(Decimal('0.01'))
