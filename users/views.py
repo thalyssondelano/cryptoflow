@@ -195,3 +195,40 @@ class UserNetWorthView(APIView):
             "net_worth_usd": net_worth,
             "assets": assets_detail
         }, status=status.HTTP_200_OK)
+
+
+class GlobalLeaderboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            limit = int(request.query_params.get('limit', 10))
+        except ValueError:
+            limit = 10
+
+        # Trava de segurança: mínimo de 1 e máximo de 50 itens por requisição
+        limit = max(1, min(limit, 50))
+
+        # Otimiza a consulta para evitar gargalos de N+1 queries
+        wallets = Wallet.objects.select_related('user').prefetch_related('crypto_assets__crypto')
+        leaderboard_data = []
+
+        for wallet in wallets:
+            balance = wallet.balance
+            crypto_assets_total = Decimal('0.00')
+
+            for asset in wallet.crypto_assets.all():
+                current_price = asset.crypto.current_price
+                crypto_assets_total += asset.quantity * current_price
+
+            net_worth = balance + crypto_assets_total
+
+            leaderboard_data.append({
+                "username": wallet.user.username,
+                "net_worth_usd": net_worth.quantize(Decimal('0.01'))
+            })
+
+        # Ordena do maior patrimônio para o menor
+        leaderboard_data = sorted(leaderboard_data, key=lambda x: x['net_worth_usd'], reverse=True)
+
+        return Response(leaderboard_data[:limit], status=status.HTTP_200_OK)
