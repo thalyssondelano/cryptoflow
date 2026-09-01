@@ -1,0 +1,35 @@
+services:
+  api:
+    build: .
+    container_name: cryptoflow_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    command: uv run python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    container_name: cryptoflow_redis
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:15-alpine
+    container_name: cryptoflow_postgres
+    environment:
+      POSTGRES_DB: cryptoflow_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
