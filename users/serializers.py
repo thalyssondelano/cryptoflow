@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Wallet
+from .models import Wallet, WalletAsset
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -24,10 +24,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
+class WalletAssetSerializer(serializers.ModelSerializer):
+    symbol = serializers.CharField(source='crypto.symbol', read_only=True)
+    name = serializers.CharField(source='crypto.name', read_only=True)
+
+    class Meta:
+        model = WalletAsset
+        fields = ['name', 'symbol', 'quantity']
+        read_only_fields = fields
+
+
 class WalletSerializer(serializers.ModelSerializer):
+    crypto_assets = WalletAssetSerializer(many=True, read_only=True)
+
     class Meta:
         model = Wallet
-        fields = ['balance']
+        fields = ['balance', 'crypto_assets']
         read_only_fields = fields
 
 
