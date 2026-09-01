@@ -6,7 +6,7 @@ from django.db import transaction
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import CustomUser, Wallet, WalletAsset, TradeHistory
-from .serializers import BuyCryptoSerializer, SellCryptoSerializer
+from .serializers import BuyCryptoSerializer, SellCryptoSerializer, TradeHistorySerializer
 from assets.models import CryptoCurrency
 from decimal import Decimal, ROUND_DOWN
 
@@ -152,3 +152,11 @@ class SellCryptoView(APIView):
             "remaining_crypto": asset.quantity,
             "new_balance": wallet.balance
         }, status=status.HTTP_200_OK)
+
+
+class TradeHistoryView(generics.ListAPIView):
+    serializer_class = TradeHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return TradeHistory.objects.filter(wallet__user=self.request.user).order_by('-timestamp')
