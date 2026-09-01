@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from .models import WalletAsset
 from .serializers import BuyCryptoSerializer, SellCryptoSerializer
 from assets.models import CryptoCurrency
+from decimal import Decimal, ROUND_DOWN
 
 User = get_user_model()
 
@@ -51,7 +52,7 @@ class BuyCryptoView(APIView):
             crypto = CryptoCurrency.objects.get(symbol=symbol)
             
             # Converte dólares na fração da cripto
-            quantity_bought = amount / crypto.current_price
+            quantity_bought = (amount / crypto.current_price).quantize(Decimal('0.00000001'), rounding=ROUND_DOWN)
 
             # Debita o dinheiro
             wallet.balance -= amount
@@ -72,7 +73,7 @@ class BuyCryptoView(APIView):
         return Response({
             "message": "Compra executada com sucesso.",
             "symbol": symbol,
-            "quantity_bought": round(quantity_bought, 8),
+            "quantity_bought": quantity_bought,
             "remaining_balance": wallet.balance
         }, status=status.HTTP_200_OK)
 
@@ -112,7 +113,7 @@ class SellCryptoView(APIView):
                 )
 
             # Converte a fração de cripto em dólares
-            usd_earned = quantity_to_sell * crypto.current_price
+            usd_earned = (quantity_to_sell * crypto.current_price).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
 
             # Atualiza a mochila e debita a cripto
             asset.quantity -= quantity_to_sell
@@ -127,7 +128,7 @@ class SellCryptoView(APIView):
             "message": "Venda executada com sucesso.",
             "symbol": symbol,
             "quantity_sold": quantity_to_sell,
-            "usd_earned": round(usd_earned, 2),
+            "usd_earned": usd_earned,
             "remaining_crypto": asset.quantity,
             "new_balance": wallet.balance
         }, status=status.HTTP_200_OK)
