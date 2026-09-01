@@ -65,5 +65,21 @@ class BuyCryptoSerializer(serializers.Serializer):
     def validate_symbol(self, value):
         # Verifica no banco se a moeda existe e está ativa para negociação
         if not CryptoCurrency.objects.filter(symbol=value, is_active=True).exists():
-            raise serializers.ValidationError("Criptomoeda não disponível")
+            raise serializers.ValidationError("Criptomoeda não disponível.")
+        return value
+
+
+class SellCryptoSerializer(serializers.Serializer):
+    symbol = serializers.CharField(max_length=10)
+    quantity = serializers.DecimalField(max_digits=18, decimal_places=8)
+
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("A quantidade para venda deve ser maior que zero.")
+        return value
+
+    def validate_symbol(self, value):
+        # Verifica se a moeda existe e está ativa para negociação
+        if not CryptoCurrency.objects.filter(symbol=value, is_active=True).exists():
+            raise serializers.ValidationError("Criptomoeda não disponível.")
         return value
