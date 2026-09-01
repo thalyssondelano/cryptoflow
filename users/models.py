@@ -42,6 +42,36 @@ class WalletAsset(models.Model):
 
     def __str__(self):
         return f"{self.quantity} {self.crypto.symbol} - {self.wallet.user.username}"
+
+
+class TradeHistory(models.Model):
+    TRADE_TYPES = (
+        ('BUY', 'Compra'),
+        ('SELL', 'Venda'),
+    )
+
+    # De quem é o recibo
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='trade_history')
+    
+    # Qual moeda foi negociada
+    crypto = models.ForeignKey('assets.CryptoCurrency', on_delete=models.SET_NULL, null=True)
+    
+    trade_type = models.CharField(max_length=4, choices=TRADE_TYPES)
+    
+    # Fração da cripto e preço que ela estava no momento da transação
+    quantity = models.DecimalField(max_digits=18, decimal_places=8)
+    price_at_transaction = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    # Total em dólares gasto (na compra) ou recebido (na venda)
+    usd_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    # Data e hora exatas
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        crypto_symbol = self.crypto.symbol if self.crypto else 'Moeda Excluída'
+        return f"{self.wallet.user.username} - {self.trade_type} - {self.quantity} {crypto_symbol}"
+
     
 # Automações
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
