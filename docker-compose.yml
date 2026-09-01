@@ -6,6 +6,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+      - /app/.venv
     depends_on:
       redis:
         condition: service_started
@@ -47,6 +48,7 @@ services:
     command: uv run celery -A core worker -l info
     volumes:
       - .:/app
+      - /app/.venv
     env_file:
       - .env
     depends_on:
@@ -62,6 +64,7 @@ services:
     command: uv run celery -A core beat -l info
     volumes:
       - .:/app
+      - /app/.venv
     env_file:
       - .env
     depends_on:
