@@ -16,7 +16,6 @@ User = get_user_model()
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'login'
 
 class UserRegisterView(generics.CreateAPIView):
@@ -24,7 +23,6 @@ class UserRegisterView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
-    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'register'
 
 
@@ -209,6 +207,7 @@ class UserNetWorthView(APIView):
 
 class GlobalLeaderboardView(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = None # Ignora a config global de paginação
 
     def get(self, request):
         try:
